@@ -96,6 +96,13 @@ test-results/
 sensor-node/*.pid
 sensor-node/logs/
 sensor-node/.installed
+sensor-node/venv/
+sensor-node/Lib/
+sensor-node/Scripts/
+sensor-node/Include/
+sensor-node/pyvenv.cfg
+sensor-node/config.yaml
+sensor-node/requirements-dev.txt
 
 # Certificates and Keys
 *.pem
