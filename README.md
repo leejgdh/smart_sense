@@ -413,9 +413,9 @@ smartsense/
 │  │
 │  ├─ config/                     # 설정 파일
 │  │  ├─ mosquitto/
-│  │  │  └─ mosquitto.conf
+│  │  │  └─ mosquitto.conf       # MQTT 브로커 설정
 │  │  └─ nginx/
-│  │     └─ nginx.conf
+│  │     └─ nginx.conf            # Reverse Proxy 설정
 │  │
 │  └─ data/                       # 데이터 볼륨
 │     ├─ postgres/               # DB 데이터
