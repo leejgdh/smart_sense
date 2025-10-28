@@ -1,0 +1,75 @@
+# SmartSense Sensor Node Configuration
+
+# Environment Mode
+# dev: Development mode (Windows/Mac, no hardware, dummy sensors)
+# production: Production mode (Raspberry Pi, real hardware)
+mode: "dev"
+
+# Node Information
+node:
+  id: "sensor-node-01"
+  location: "Office Room A"
+  description: "Temperature and air quality monitoring"
+
+# MQTT Broker Connection
+mqtt:
+  broker_host: "localhost"  # AI Server IP address (auto-discovered via mDNS in production mode)
+  broker_port: 1883
+  username: ""  # Leave empty if no authentication
+  password: ""
+  use_tls: false
+
+# Sensor Configuration
+sensors:
+  # BME680 - Temperature, Humidity, Pressure, VOC
+  bme680:
+    enabled: true
+    use_dummy: true  # Set to true to use simulated data (no hardware required)
+    i2c_address: 0x76  # or 0x77
+    read_interval: 15  # seconds
+
+  # SCD40 - CO2 sensor
+  scd40:
+    enabled: false
+    use_dummy: true  # Set to true to use simulated data (no hardware required)
+    i2c_address: 0x62
+    read_interval: 15
+
+  # PMS5003 - Particulate Matter sensor
+  pms5003:
+    enabled: false
+    use_dummy: true  # Set to true to use simulated data (no hardware required)
+    uart_port: "/dev/ttyAMA0"
+    baudrate: 9600
+    read_interval: 15
+
+  # BH1750 - Light sensor
+  bh1750:
+    enabled: false
+    use_dummy: true  # Set to true to use simulated data (no hardware required)
+    i2c_address: 0x23
+    read_interval: 15
+
+  # PIR - Motion sensor
+  pir:
+    enabled: false
+    gpio_pin: 17
+
+# Output Devices
+outputs:
+  # RGB LED for status indication
+  led:
+    enabled: false
+    gpio_pin: 18  # PWM capable pin
+
+  # Buzzer for alerts
+  buzzer:
+    enabled: false
+    gpio_pin: 27
+
+# Logging
+logging:
+  level: "INFO"  # DEBUG, INFO, WARNING, ERROR
+  file: "/var/log/smartsense/sensor-node.log"
+  max_size: "10MB"
+  backup_count: 5
