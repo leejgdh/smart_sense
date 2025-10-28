@@ -541,11 +541,6 @@ GET    /api/agent/info                       # Agent 정보 조회
 GET    /api/agent/tools                      # 사용 가능한 Tool 목록
 POST   /api/agent/execute                    # Tool 실행
 POST   /api/agent/query                      # 자연어 질의
-
-MCP (Model Context Protocol):
-POST   /api/mcp                              # MCP JSON-RPC 요청
-GET    /api/mcp/sse                          # MCP SSE 스트림
-GET    /api/mcp/info                         # MCP 서버 정보
 ```
 
 ---

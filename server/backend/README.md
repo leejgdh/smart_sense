@@ -208,7 +208,6 @@ fetch('http://localhost:3000/api/sensors/nodes', {
 - **AI API** (`/api/ai`): AI 분석 및 챗봇
 - **Devices API** (`/api/devices`): IoT 기기 제어 및 로그
 - **Agent API** (`/api/agent`): AI Agent 통신 (Public, 인증 불필요)
-- **MCP API** (`/api/mcp`): Model Context Protocol (Public, 인증 불필요)
 
 ## AI Agent API
 
@@ -308,65 +307,11 @@ curl -X POST http://localhost:3000/api/agent/query \
 8. **control_device** - IoT 디바이스 제어 (MQTT)
 9. **get_device_status** - 디바이스 상태 조회
 
-### MCP (Model Context Protocol)
+### MCP (Model Context Protocol) 연동
 
-MCP는 Anthropic이 개발한 AI Agent 간 표준 통신 프로토콜입니다.
+MCP 클라이언트를 통해 Claude Desktop 등과 연동할 수 있습니다.
 
-#### POST /api/mcp
-MCP JSON-RPC 요청 처리
-
-```bash
-curl -X POST http://localhost:3000/api/mcp \
-  -H "Content-Type: application/json" \
-  -d '{
-    "jsonrpc": "2.0",
-    "id": 1,
-    "method": "tools/list",
-    "params": {}
-  }'
-```
-
-#### GET /api/mcp/sse
-Server-Sent Events 스트림 (실시간 이벤트)
-
-```bash
-curl http://localhost:3000/api/mcp/sse
-```
-
-#### GET /api/mcp/info
-MCP 서버 정보
-
-```bash
-curl http://localhost:3000/api/mcp/info
-```
-
-**응답**:
-```json
-{
-  "name": "smartsense-mcp-server",
-  "version": "1.0.0",
-  "protocol": "Model Context Protocol (MCP)",
-  "transport": ["http", "sse"],
-  "capabilities": {
-    "tools": true,
-    "resources": false,
-    "prompts": false
-  }
-}
-```
-
-### Claude Desktop MCP 설정 예시
-
-```json
-{
-  "mcpServers": {
-    "smartsense": {
-      "url": "http://localhost:3000/api/mcp",
-      "transport": "http"
-    }
-  }
-}
-```
+자세한 내용은 [smart-sense-mcp](../../smart-sense-mcp/README.md) 프로젝트를 참조하세요.
 
 ## 데이터베이스 스키마
 
