@@ -1,0 +1,33 @@
+{
+  "name": "smart-sense-mcp",
+  "version": "1.0.0",
+  "description": "SmartSense MCP Client - stdio bridge to SmartSense Backend API",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "smart-sense-mcp": "dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc && chmod +x dist/index.js",
+    "dev": "tsx src/index.ts",
+    "start": "node dist/index.js"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "smartsense",
+    "iot",
+    "sensors"
+  ],
+  "author": "SmartSense Team",
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.4",
+    "axios": "^1.6.5"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.5",
+    "tsx": "^4.7.0",
+    "typescript": "^5.3.3"
+  }
+}

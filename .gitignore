@@ -1,0 +1,122 @@
+# Dependencies
+node_modules/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.so
+*.egg
+*.egg-info/
+.venv/
+venv/
+env/
+ENV/
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Environment files
+.env
+.env.local
+.env.*.local
+.env.production
+.env.development
+*.env
+!.env.example
+
+# Build outputs
+dist/
+build/
+.next/
+out/
+*.pyc
+*.pyo
+*.whl
+
+# Logs
+*.log
+logs/
+*.log.*
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Database
+*.sqlite
+*.sqlite3
+*.db
+server/data/postgres/
+server/data/mosquitto/
+server/data/ollama/
+
+# IDE and Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+*.swn
+*~
+.DS_Store
+*.sublime-project
+*.sublime-workspace
+
+# OS
+Thumbs.db
+Desktop.ini
+.Spotlight-V100
+.Trashes
+
+# Docker
+server/data/
+*.pid
+docker-compose.override.yml
+
+# Testing
+coverage/
+.nyc_output/
+*.test.js
+*.spec.js
+.pytest_cache/
+htmlcov/
+.tox/
+.coverage
+.coverage.*
+nosetests.xml
+test-results/
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.swp
+.cache/
+*.orig
+
+# Sensor node specific
+sensor-node/*.pid
+sensor-node/logs/
+sensor-node/.installed
+
+# Certificates and Keys
+*.pem
+*.key
+*.crt
+*.csr
+*.p12
+*.pfx
+ssl/
+certs/
+
+# Lock files (optional - uncomment if you want to ignore)
+# package-lock.json
+# yarn.lock
+# pnpm-lock.yaml
+
+# TypeScript
+*.tsbuildinfo
+next-env.d.ts
+
+# Misc
+*.bak
+*.orig
+.eslintcache

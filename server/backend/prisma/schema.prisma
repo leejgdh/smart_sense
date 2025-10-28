@@ -1,0 +1,96 @@
+// Prisma Schema for SmartSense Backend
+// Database: PostgreSQL with TimescaleDB extension
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Sensor Node Model
+model SensorNode {
+  id          Int      @id @default(autoincrement())
+  nodeId      String   @unique @map("node_id")
+  name        String?
+  location    String?
+  description String?
+  isActive    Boolean  @default(true) @map("is_active")
+  lastSeenAt  DateTime @map("last_seen_at")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  sensorReadings    SensorReading[]
+  deviceControlLogs DeviceControlLog[]
+  aiInsights        AiInsight[]
+
+  @@map("sensor_nodes")
+}
+
+// Sensor Reading Model (TimescaleDB Hypertable)
+// Note: For TimescaleDB, we use a composite primary key that includes the timestamp
+// Using TIMESTAMPTZ for TimescaleDB compatibility with time_bucket function
+model SensorReading {
+  nodeId     Int      @map("node_id")
+  sensorType String   @map("sensor_type")
+  metricName String   @map("metric_name")
+  value      Float
+  unit       String
+  timestamp  DateTime @db.Timestamptz(3)
+
+  // Relations
+  sensorNode SensorNode @relation(fields: [nodeId], references: [id], onDelete: Cascade)
+
+  // Composite primary key including timestamp for TimescaleDB compatibility
+  @@id([timestamp, nodeId, metricName])
+  @@index([nodeId])
+  @@index([timestamp(sort: Desc)])
+  @@index([sensorType])
+  @@map("sensor_readings")
+}
+
+// AI Insight Model
+model AiInsight {
+  id          Int      @id @default(autoincrement())
+  nodeId      Int      @map("node_id")
+  insightType String   @map("insight_type")
+  title       String
+  description String
+  severity    String
+  metadata    Json?
+  isRead      Boolean  @default(false) @map("is_read")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  // Relations
+  sensorNode SensorNode @relation(fields: [nodeId], references: [id], onDelete: Cascade)
+
+  @@index([nodeId])
+  @@index([createdAt(sort: Desc)])
+  @@index([severity])
+  @@map("ai_insights")
+}
+
+// Device Control Log Model
+model DeviceControlLog {
+  id           Int      @id @default(autoincrement())
+  nodeId       Int?     @map("node_id")
+  deviceId     String   @map("device_id")
+  deviceType   String   @map("device_type")
+  action       String
+  parameters   Json?
+  triggeredBy  String   @map("triggered_by")
+  success      Boolean
+  errorMessage String?  @map("error_message")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  // Relations
+  sensorNode SensorNode? @relation(fields: [nodeId], references: [id], onDelete: Cascade)
+
+  @@index([nodeId])
+  @@index([deviceId])
+  @@index([createdAt(sort: Desc)])
+  @@map("device_control_logs")
+}

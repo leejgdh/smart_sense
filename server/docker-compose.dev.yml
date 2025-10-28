@@ -1,0 +1,63 @@
+# ============================================================
+# SmartSense Development Environment
+# ============================================================
+#
+# Usage:
+#   docker-compose -f docker-compose.dev.yml up -d
+#
+# This runs only infrastructure services (DB, MQTT)
+# Backend should be run locally: cd backend && npm run start:dev
+# Frontend (optional): cd frontend && npm run dev
+#
+# ============================================================
+
+services:
+  # ========================================
+  # PostgreSQL with TimescaleDB Extension
+  # ========================================
+  postgres:
+    image: timescale/timescaledb:latest-pg16
+    container_name: smartsense-db-dev
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-smartsense}
+      POSTGRES_USER: ${POSTGRES_USER:-smartsense}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
+      TZ: Asia/Seoul
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres-dev-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-smartsense}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ========================================
+  # Mosquitto MQTT Broker
+  # ========================================
+  mosquitto:
+    image: eclipse-mosquitto:latest
+    container_name: smartsense-mqtt-dev
+    restart: unless-stopped
+    ports:
+      - "${MQTT_PORT:-1883}:1883"
+      - "${MQTT_WS_PORT:-9001}:9001"
+    volumes:
+      - ./config/mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf
+      - mosquitto-dev-data:/mosquitto/data
+      - mosquitto-dev-log:/mosquitto/log
+    healthcheck:
+      test: ["CMD-SHELL", "mosquitto_sub -t '$$SYS/#' -C 1 -i healthcheck -W 3"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  postgres-dev-data:
+    name: smartsense-postgres-dev
+  mosquitto-dev-data:
+    name: smartsense-mosquitto-dev-data
+  mosquitto-dev-log:
+    name: smartsense-mosquitto-dev-log

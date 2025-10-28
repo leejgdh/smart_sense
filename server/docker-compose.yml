@@ -1,0 +1,96 @@
+# ============================================================
+# SmartSense Production Environment
+# ============================================================
+#
+# Usage:
+#   docker-compose up -d
+#
+# Includes: PostgreSQL, MQTT, Backend, Frontend
+# Excludes: Nginx (reverse proxy), Ollama (AI) - managed separately
+#
+# ============================================================
+
+services:
+  # ========================================
+  # PostgreSQL with TimescaleDB Extension
+  # ========================================
+  postgres:
+    image: timescale/timescaledb:latest-pg16
+    container_name: smartsense-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-smartsense}
+      POSTGRES_USER: ${POSTGRES_USER:-smartsense}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
+      TZ: Asia/Seoul
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - smartsense-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-smartsense}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ========================================
+  # Mosquitto MQTT Broker
+  # ========================================
+  mosquitto:
+    image: eclipse-mosquitto:latest
+    container_name: smartsense-mqtt
+    restart: unless-stopped
+    ports:
+      - "${MQTT_PORT:-1883}:1883"
+      - "${MQTT_WS_PORT:-9001}:9001"
+    volumes:
+      - ./config/mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf
+      - mosquitto-data:/mosquitto/data
+      - mosquitto-log:/mosquitto/log
+    networks:
+      - smartsense-network
+    healthcheck:
+      test: ["CMD-SHELL", "mosquitto_sub -t '$$SYS/#' -C 1 -i healthcheck -W 3"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ========================================
+  # Backend API (NestJS)
+  # ========================================
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: smartsense-backend
+    restart: unless-stopped
+    environment:
+      NODE_ENV: ${NODE_ENV:-production}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-smartsense}:${POSTGRES_PASSWORD:-changeme}@postgres:5432/${POSTGRES_DB:-smartsense}
+      MQTT_BROKER_URL: mqtt://mosquitto:1883
+      OLLAMA_URL: ${OLLAMA_URL:-http://localhost:11434}
+      PORT: 3000
+    ports:
+      - "${BACKEND_PORT:-3000}:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      mosquitto:
+        condition: service_healthy
+    networks:
+      - smartsense-network
+
+networks:
+  smartsense-network:
+    driver: bridge
+    name: smartsense-network
+
+volumes:
+  postgres-data:
+    name: smartsense-postgres-data
+  mosquitto-data:
+    name: smartsense-mosquitto-data
+  mosquitto-log:
+    name: smartsense-mosquitto-log
