@@ -1,6 +1,32 @@
 # SmartSense Sensor Node
 
-IoT 센서 노드 - 환경 데이터 수집 및 전송
+IoT 센서 노드 - 환경 데이터 수집 및 MQTT 전송
+
+## 📚 문서
+
+- **[ARCHITECTURE.md](./ARCHITECTURE.md)** - 시스템 아키텍처 및 흐름도
+- **[MQTT_PROTOCOL.md](./MQTT_PROTOCOL.md)** - MQTT 통신 프로토콜 상세
+- **[PLUG_AND_PLAY.md](../docs/PLUG_AND_PLAY.md)** - WiFi 프로비저닝 및 자동 서버 탐색
+
+## 개요
+
+SmartSense Sensor Node는 라즈베리 파이에서 실행되는 센서 데이터 수집 프로그램입니다.
+다양한 환경 센서로부터 데이터를 읽어 MQTT를 통해 SmartSense 백엔드로 전송합니다.
+
+**주요 기능**:
+- 🌡️ 다중 센서 지원 (온도, 습도, CO2, 미세먼지 등)
+- 📡 MQTT 기반 실시간 데이터 전송
+- 🔌 Plug and Play (WiFi 자동 프로비저닝)
+- 💡 LED/Buzzer를 통한 상태 표시
+- 🔄 자동 재연결 및 에러 복구
+
+## 빠른 시작
+
+### 실행
+
+```bash
+python main.py
+```
 
 ## 설치 방법
 

@@ -13,17 +13,22 @@ async function bootstrap() {
 
   const configService = app.get(ConfigService);
 
-  // Enable CORS
-  app.enableCors({
-    origin: true, // Allow all origins in development
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
-    exposedHeaders: ['Content-Length', 'X-Request-Id'],
-    maxAge: 3600,
-  });
-
-  logger.log('✅ CORS enabled for all origins (development mode)');
+  // CORS is handled by Nginx proxy in production
+  // Only enable CORS in development mode
+  const nodeEnv = configService.get('NODE_ENV', 'development');
+  if (nodeEnv === 'development') {
+    app.enableCors({
+      origin: true, // Allow all origins in development
+      credentials: true,
+      methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+      allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
+      exposedHeaders: ['Content-Length', 'X-Request-Id'],
+      maxAge: 3600,
+    });
+    logger.log('✅ CORS enabled for all origins (development mode)');
+  } else {
+    logger.log('✅ CORS handled by Nginx proxy (production mode)');
+  }
 
   // Global validation pipe
   app.useGlobalPipes(
