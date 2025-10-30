@@ -268,9 +268,10 @@ export class SensorsService {
       ORDER BY sensor_type, metric_name
     `;
 
-    const sensorTypes = await this.prisma.$queryRawUnsafe<
-      Array<{ sensor_type: string; metric_name: string; unit: string }>
-    >(sensorTypesSQL, ...params);
+    const sensorTypes = (await this.prisma.$queryRawUnsafe(
+      sensorTypesSQL,
+      ...params,
+    )) as Array<{ sensor_type: string; metric_name: string; unit: string }>;
 
     // Get time-series data for each sensor type
     const sensors = await Promise.all(
@@ -292,9 +293,13 @@ export class SensorsService {
             ORDER BY timestamp ASC
           `;
 
-          data = await this.prisma.$queryRawUnsafe<
-            Array<{ timestamp: Date; value: number }>
-          >(dataSQL, node.id, sensor.metric_name, calculatedStartTime, calculatedEndTime);
+          data = (await this.prisma.$queryRawUnsafe(
+            dataSQL,
+            node.id,
+            sensor.metric_name,
+            calculatedStartTime,
+            calculatedEndTime,
+          )) as Array<{ timestamp: Date; value: number }>;
         } else {
           // Aggregated mode: Use time_bucket
           dataSQL = `
@@ -310,9 +315,13 @@ export class SensorsService {
             ORDER BY bucket ASC
           `;
 
-          data = await this.prisma.$queryRawUnsafe<
-            Array<{ bucket: Date; avg_value: number }>
-          >(dataSQL, node.id, sensor.metric_name, calculatedStartTime, calculatedEndTime);
+          data = (await this.prisma.$queryRawUnsafe(
+            dataSQL,
+            node.id,
+            sensor.metric_name,
+            calculatedStartTime,
+            calculatedEndTime,
+          )) as Array<{ bucket: Date; avg_value: number }>;
         }
 
         return {

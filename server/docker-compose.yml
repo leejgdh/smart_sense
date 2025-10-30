@@ -1,12 +1,13 @@
 # ============================================================
-# SmartSense Production Environment
+# SmartSense Development Environment
 # ============================================================
 #
 # Usage:
-#   docker-compose up -d
+#   docker-compose -f docker-compose.dev.yml up -d
 #
-# Includes: PostgreSQL, MQTT, Backend, Frontend
-# Excludes: Nginx (reverse proxy), Ollama (AI) - managed separately
+# This runs only infrastructure services (DB, MQTT)
+# Backend should be run locally: cd backend && npm run start:dev
+# Frontend (optional): cd frontend && npm run dev
 #
 # ============================================================
 
@@ -16,7 +17,7 @@ services:
   # ========================================
   postgres:
     image: timescale/timescaledb:latest-pg16
-    container_name: smartsense-db
+    container_name: smartsense-db-dev
     restart: unless-stopped
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-smartsense}
@@ -26,7 +27,7 @@ services:
     ports:
       - "${POSTGRES_PORT:-5432}:5432"
     volumes:
-      - postgres-data:/var/lib/postgresql/data
+      - postgres-dev-data:/var/lib/postgresql/data
     networks:
       - smartsense-network
     healthcheck:
@@ -40,15 +41,15 @@ services:
   # ========================================
   mosquitto:
     image: eclipse-mosquitto:latest
-    container_name: smartsense-mqtt
+    container_name: smartsense-mqtt-dev
     restart: unless-stopped
     ports:
       - "${MQTT_PORT:-1883}:1883"
       - "${MQTT_WS_PORT:-9001}:9001"
     volumes:
       - ./config/mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf
-      - mosquitto-data:/mosquitto/data
-      - mosquitto-log:/mosquitto/log
+      - mosquitto-dev-data:/mosquitto/data
+      - mosquitto-dev-log:/mosquitto/log
     networks:
       - smartsense-network
     healthcheck:
@@ -58,20 +59,22 @@ services:
       retries: 3
 
   # ========================================
-  # Backend API (NestJS)
+  # Backend API (NestJS) - Built from source
   # ========================================
-  backend:
+  smartsense:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: smartsense-backend
+    container_name: smartsense-backend-dev
     restart: unless-stopped
     environment:
-      NODE_ENV: ${NODE_ENV:-production}
-      DATABASE_URL: postgresql://${POSTGRES_USER:-smartsense}:${POSTGRES_PASSWORD:-changeme}@postgres:5432/${POSTGRES_DB:-smartsense}
-      MQTT_BROKER_URL: mqtt://mosquitto:1883
-      OLLAMA_URL: ${OLLAMA_URL:-http://localhost:11434}
-      PORT: 3000
+      NODE_ENV: production
+      DATABASE_URL: postgresql://smartsense:changeme@smartsense-db-dev:5432/smartsense
+      MQTT_BROKER_URL: mqtt://smartsense-mqtt-dev:1883
+      OLLAMA_URL: http://ollama
+      FIREBASE_PROJECT_ID: hwida-example
+      FIREBASE_CLIENT_EMAIL: firebase-adminsdk-fbsvc@hwida-example.iam.gserviceaccount.com
+      FIREBASE_PRIVATE_KEY: -----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCzw7/mxV3R3C+P\nJfY+6XYOLrvrtykAyEC77xqUY3OcrlCOcrYiU+rLZ4yo16qcbYxUsuxmlhVl08lI\n3zMcdaD8VKzwudcGyUbBtfTgbCjnbmh2bweIjQRRDQh1E+csDS0/j9ALznwUJv+O\nNaJ2znGu001geW0dNOLMAehFjL0vXjY2UAjIfQEXDOdn+SZTgk1AZxAjzN8gXst4\n7BmZM3LqdtVSYWm6mbYOqkYJtJNjYT9M/48TOYXCcLdv3CKUCoK13Al3edo2x6gs\ng9JrwOC9TuQKhg29TGNVyK7nUUYwa0dH2i6AJc/22DdQq7G/oQRebL13erE45roE\nSwI13jXnAgMBAAECggEASDQ6esNQrU/vDGTXlSppwEWWNpYBkq5cjf/6oZqWn9rG\nQYkizgP93Yhwj4rcnOtFf+nEGWp0Gsvn3+zC104KBQAv3JsQmsmysXDX9GKNRXPr\n4pIzKO5XSwTcnkYJxwBd6ddmXa+o1+FYKXMyl9zQ/cMio7ryEFajOAUWGgVvIbxd\nvItkhQ9eU/hMNE+qNw+RZ2nYOio+f+ikKFffMnEH0aC7BLFSw2uJiyyVnHKnIqOv\nntDW9liFS7CqJbYHCmkLvQ3hfj+tPHu5g0JbhBB/jOq69LZFaMegdCIgspA+yd9G\nzFADvzEXGITrGOLjlhJRPSyfnpkjEwBT0x+TdTNHIQKBgQDfDSgE29cE0IZL62KA\nlqTsL7Rq4SdIQJ7bBwLHHGMVFcmHiUUsSl8AXbFdI/ONLBwCBFnTHII9YCpA/lzS\nH8XAhTkLu/EMQxGel8WJJ+nDK4cRhBDALTH4rWDAZxiRZuMZVa9IZDzmgCu5NSZj\nSr3ncSWdk70RsC3J8LNuuKZ/hwKBgQDOUazF0e86BaSrxTeX8f7Qh7xydz2gOmbB\nDLJV+JGx86fspsqzLG6w5kyGGW+ND97p57oYkxT6dEbh5xFdOBLs6V6fdKflXR4U\n/SElACws6CbZGZj4AqBPa4aXge3HvEzdN3TLesQB0HTM5w78VnpA3wCtdhoLYngw\nfxSNocRuoQKBgEDRjPCkhj6y7mP/mldt761nS5HHrmezx7Y0ulzsZerJsw/9FyoA\nzszHbXR4rx02VUlMxGGyJjL50C2k/Ypei1QgIuzDCBCdKPCigFgUTj1WV+ECNO/z\n8lKm57fh/eS7NoG1QcPSxVPiqVIgHPC71qX8XocFWOtb/GJz3WDurgvfAoGBAKJI\ncgqjp3TPDYiitqjIizLBIYQzsICAj2RXtUqUGx2K1tH5G8U1NNfmPdjY1vpwuljn\nkWRVBJI/taVo2CqnuZMpuOjZnFp4FPpTZKey7AxiinQHg1/IyQnPPO2dIEgUH619\nOlv284etzMGDGTF4X+74uZK3K6M6z+jtfGAvFtAhAoGAB4Pw2v2soCMvMncUTQ+2\ndkeLaG5H67ZwZRnuAte5SIamf3F9slGALDJug7rv9PELMAu640CWSDG7iph1z7kM\ndjB3RxCqvPCZF2C4UoLrSxKmbmOW8wr8Lpj1Md67tBbwNMyHFmCO/8Px7+LFG/cP\nVLMujn3pBz3vQoTQ1mwT6zg=\n-----END PRIVATE KEY-----\n
     ports:
       - "${BACKEND_PORT:-3000}:3000"
     depends_on:
@@ -81,16 +84,15 @@ services:
         condition: service_healthy
     networks:
       - smartsense-network
-
 networks:
   smartsense-network:
     driver: bridge
-    name: smartsense-network
+    name: smartsense-network-dev
 
 volumes:
-  postgres-data:
-    name: smartsense-postgres-data
-  mosquitto-data:
-    name: smartsense-mosquitto-data
-  mosquitto-log:
-    name: smartsense-mosquitto-log
+  postgres-dev-data:
+    name: smartsense-postgres-dev
+  mosquitto-dev-data:
+    name: smartsense-mosquitto-dev-data
+  mosquitto-dev-log:
+    name: smartsense-mosquitto-dev-log

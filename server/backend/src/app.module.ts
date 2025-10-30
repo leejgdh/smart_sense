@@ -10,10 +10,6 @@ import { FirebaseModule } from './firebase/firebase.module';
 import { AuthModule } from './auth/auth.module';
 import { AgentModule } from './agent/agent.module';
 import { FirebaseAuthGuard } from './auth/firebase-auth.guard';
-import { MdnsService } from './common/mdns.service';
-
-// Conditionally provide MdnsService only in production
-const mdnsProvider = process.env.NODE_ENV === 'production' ? [MdnsService] : [];
 
 @Module({
   imports: [
@@ -40,7 +36,6 @@ const mdnsProvider = process.env.NODE_ENV === 'production' ? [MdnsService] : [];
     AgentModule,
   ],
   providers: [
-    ...mdnsProvider,
     // Apply Firebase Auth Guard globally to all routes
     {
       provide: APP_GUARD,
